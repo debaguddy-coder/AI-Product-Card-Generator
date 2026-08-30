@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Product Card Generator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>✨ AI Product Card Generator</h1>
+      <p>Turn raw startup ideas into instant marketing cards</p>
+    </header>
+
+    <section class="control-panel">
+      <div class="input-group">
+        <label for="apiKey">Gemini API Key</label>
+        <input type="password" id="apiKey" placeholder="Enter your Gemini API key..." />
+      </div>
+
+      <div class="input-group">
+        <label for="productIdea">Product Idea</label>
+        <div class="input-row">
+          <input 
+            type="text" 
+            id="productIdea" 
+            placeholder="e.g., AI Study Assistant, Smart Water Bottle..." 
+          />
+          <button id="generateBtn" onclick="generateProductCard()">
+            <span id="btnText">Generate Card</span>
+            <div id="btnSpinner" class="spinner hidden"></div>
+          </button>
+        </div>
+      </div>
+      <p id="errorMsg" class="error-msg hidden"></p>
+    </section>
+
+    <section id="cardContainer" class="card-container hidden">
+      <div class="product-card" id="productCard">
+        <div class="card-header">
+          <span class="product-emoji" id="cardEmoji">🚀</span>
+          <button class="copy-btn" id="copyBtn" onclick="copyCardContent()" title="Copy to clipboard">
+            📋 Copy
+          </button>
+        </div>
+        <h2 class="product-name" id="cardName">Product Name</h2>
+        <p class="product-tagline" id="cardTagline">A catchy tagline goes here</p>
+        <p class="product-description" id="cardDesc">
+          A clear, engaging description of what your product does and how it helps users.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
