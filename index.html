@@ -2,57 +2,472 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Product Card Generator</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    :root {
+      --bg-a: #6366f1;
+      --bg-b: #ec4899;
+      --card-accent: #6366f1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+      background: linear-gradient(135deg, var(--bg-a), var(--bg-b));
+      background-attachment: fixed;
+      transition: background 0.7s ease-in-out;
+      color: #111827;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .header {
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .header h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .header p {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.9);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Input Panel */
+    .panel {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      color: #0f172a;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .input-action-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .input-action-row input {
+      flex: 1;
+    }
+
+    button#generateBtn {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+    button#generateBtn:hover {
+      background: #1e293b;
+    }
+
+    button#generateBtn:active {
+      transform: scale(0.98);
+    }
+
+    button#generateBtn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Flashing Error Banner */
+    .error-banner {
+      background: #fef2f2;
+      border: 1.5px solid #ef4444;
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      color: #991b1b;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      animation: shake 0.4s ease, flash 1.2s infinite alternate;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    @keyframes flash {
+      from { box-shadow: 0 0 0px rgba(239, 68, 68, 0.2); }
+      to { box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+    }
+
+    /* Product Flash Card */
+    .product-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.8rem;
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.18);
+      border-left: 6px solid var(--card-accent);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: border-color 0.4s ease;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-emoji {
+      font-size: 2.3rem;
+      line-height: 1;
+    }
+
+    .copy-btn {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334151;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .card-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .card-tagline {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--card-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .card-description {
+      font-size: 0.95rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    /* Utilities */
+    .hidden {
+      display: none !important;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .input-action-row {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>✨ AI Product Card Generator !!</h1>
-      <p>Turn raw startup ideas into instant marketing cards</p>
+  <main class="container">
+    <header class="header">
+      <h1>AI Product Card Generator</h1>
+      <p>Instant brand marketing cards powered by Gemini AI</p>
     </header>
 
-    <section class="control-panel">
-      <div class="input-group">
-        <label for="apiKey">Gemini API Key</label>
-        <input type="password" id="apiKey" placeholder="Enter your Gemini API key..." />
+    <section class="panel">
+      <div class="field">
+        <label for="apiKeyInput">Gemini API Key</label>
+        <input 
+          type="password" 
+          id="apiKeyInput" 
+          placeholder="Paste your Gemini API key here..." 
+          autocomplete="off"
+        />
       </div>
 
-      <div class="input-group">
-        <label for="productIdea">Product Idea</label>
-        <div class="input-row">
+      <div class="field">
+        <label for="ideaInput">Product Idea</label>
+        <div class="input-action-row">
           <input 
             type="text" 
-            id="productIdea" 
-            placeholder="e.g., AI Study Assistant, Smart Water Bottle..." 
+            id="ideaInput" 
+            placeholder="e.g. Smart Water Bottle, AI Study Assistant..." 
+            autocomplete="off"
           />
-          <button id="generateBtn" onclick="generateProductCard()">
-            <span id="btnText">Generate Card</span>
-            <div id="btnSpinner" class="spinner hidden"></div>
+          <button id="generateBtn" type="button">
+            <span id="btnText">Generate Product Card</span>
+            <span id="btnSpinner" class="spinner hidden"></span>
           </button>
         </div>
       </div>
-      <p id="errorMsg" class="error-msg hidden"></p>
-    </section>
 
-    <section id="cardContainer" class="card-container hidden">
-      <div class="product-card" id="productCard">
-        <div class="card-header">
-          <span class="product-emoji" id="cardEmoji">🚀</span>
-          <button class="copy-btn" id="copyBtn" onclick="copyCardContent()" title="Copy to clipboard">
-            📋 Copy
-          </button>
-        </div>
-        <h2 class="product-name" id="cardName">Product Name</h2>
-        <p class="product-tagline" id="cardTagline">A catchy tagline goes here</p>
-        <p class="product-description" id="cardDesc">
-          A clear, engaging description of what your product does and how it helps users.
-        </p>
+      <div id="errorBox" class="error-banner hidden" role="alert">
+        <span>⚠️</span>
+        <span id="errorText">Error message here</span>
       </div>
     </section>
-  </div>
 
-  <script src="script.js"></script>
+    <article id="card" class="product-card hidden">
+      <div class="card-header">
+        <span id="cardEmoji" class="card-emoji">✨</span>
+        <button id="copyBtn" class="copy-btn" type="button">
+          📋 Copy to clipboard
+        </button>
+      </div>
+      <h2 id="cardName" class="card-name"></h2>
+      <p id="cardTagline" class="card-tagline"></p>
+      <p id="cardDescription" class="card-description"></p>
+    </article>
+  </main>
+
+  <script>
+    const GRADIENTS = [
+      ["#6366f1", "#ec4899"],
+      ["#0ea5e9", "#22c55e"],
+      ["#f97316", "#ef4444"],
+      ["#8b5cf6", "#06b6d4"],
+      ["#14b8a6", "#eab308"]
+    ];
+
+    function randomGradient() {
+      const [a, b] = GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)];
+      document.documentElement.style.setProperty("--bg-a", a);
+      document.documentElement.style.setProperty("--bg-b", b);
+    }
+
+    function triggerFlashError(message) {
+      const errorBox = document.getElementById("errorBox");
+      const errorText = document.getElementById("errorText");
+      const card = document.getElementById("card");
+
+      card.classList.add("hidden");
+      errorText.textContent = message;
+      errorBox.classList.remove("hidden");
+
+      errorBox.style.animation = "none";
+      void errorBox.offsetHeight; 
+      errorBox.style.animation = "shake 0.4s ease, flash 1.2s infinite alternate";
+    }
+
+    function clearError() {
+      const errorBox = document.getElementById("errorBox");
+      errorBox.classList.add("hidden");
+    }
+
+    async function handleGenerate() {
+      const apiKey = document.getElementById("apiKeyInput").value.trim();
+      const idea = document.getElementById("ideaInput").value.trim();
+      const generateBtn = document.getElementById("generateBtn");
+      const btnText = document.getElementById("btnText");
+      const btnSpinner = document.getElementById("btnSpinner");
+      const card = document.getElementById("card");
+
+      clearError();
+
+      if (!apiKey) {
+        triggerFlashError("Missing API Key! Please paste your Gemini API key.");
+        return;
+      }
+      if (!idea) {
+        triggerFlashError("Missing Product Idea! Please enter a product idea first.");
+        return;
+      }
+
+      generateBtn.disabled = true;
+      btnText.textContent = "Generating...";
+      btnSpinner.classList.remove("hidden");
+
+      const prompt = `You are a branding assistant helping a startup founder advertise their product.
+The product idea is: "${idea}".
+
+Generate marketing content for this product. Return ONLY valid JSON matching this schema:
+- productName: A short catchy product name
+- tagline: A punchy 3-6 word tagline
+- description: 1-2 sentences explaining what it does and who it is for
+- emoji: A single emoji representing the product
+- themeColor: A hex color code matching the product theme (e.g. #3b82f6, #10b981, #f43f5e)`;
+
+      try {
+        // UPDATED: Now targeting gemini-3.6-flash
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+        
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const msg = errData.error?.message || `HTTP status ${response.status}`;
+          
+          if (response.status === 400 || response.status === 403) {
+            throw new Error(`API Key error: ${msg}`);
+          } else if (response.status === 429) {
+            throw new Error("Quota exceeded / rate limited. Please wait 10 seconds.");
+          } else {
+            throw new Error(`Gemini Error: ${msg}`);
+          }
+        }
+
+        const data = await response.json();
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!rawText) {
+          throw new Error("Received empty response from Gemini API.");
+        }
+
+        const cleaned = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+        const result = JSON.parse(cleaned);
+
+        document.getElementById("cardEmoji").textContent = result.emoji || "✨";
+        document.getElementById("cardName").textContent = result.productName || idea;
+        document.getElementById("cardTagline").textContent = result.tagline || "";
+        document.getElementById("cardDescription").textContent = result.description || "";
+
+        const accent = result.themeColor || "#6366f1";
+        document.documentElement.style.setProperty("--card-accent", accent);
+
+        randomGradient();
+
+        card.classList.remove("hidden");
+        card.style.animation = "none";
+        void card.offsetHeight;
+        card.style.animation = null;
+
+      } catch (err) {
+        console.error("Generation error:", err);
+        triggerFlashError(err.message || "Could not generate card. Check console for details.");
+      } finally {
+        generateBtn.disabled = false;
+        btnText.textContent = "Generate Product Card";
+        btnSpinner.classList.add("hidden");
+      }
+    }
+
+    async function handleCopy() {
+      const name = document.getElementById("cardName").textContent;
+      const tagline = document.getElementById("cardTagline").textContent;
+      const desc = document.getElementById("cardDescription").textContent;
+      const copyBtn = document.getElementById("copyBtn");
+
+      const text = `Product Name: ${name}\nTagline: ${tagline}\nDescription: ${desc}`;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = "✅ Copied!";
+        setTimeout(() => {
+          copyBtn.textContent = originalText;
+        }, 1500);
+      } catch {
+        triggerFlashError("Clipboard access denied by browser.");
+      }
+    }
+
+    document.getElementById("generateBtn").addEventListener("click", handleGenerate);
+    document.getElementById("copyBtn").addEventListener("click", handleCopy);
+    document.getElementById("ideaInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleGenerate();
+    });
+  </script>
 </body>
 </html>
